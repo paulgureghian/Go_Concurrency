@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Book struct is exported
 type Book struct {
 	ID            int
 	Title         string
