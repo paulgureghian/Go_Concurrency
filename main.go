@@ -29,7 +29,7 @@ func main() {
 			continue
 		}
 
-		fmt.Println("Book not found with id: '%v'", id)
+		fmt.Printf("Book not found with id: '%v'", id)
 		time.Sleep(150 * time.Millisecond)
 	}
 }
