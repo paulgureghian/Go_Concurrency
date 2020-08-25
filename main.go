@@ -15,7 +15,7 @@ func main() {
 
 		id := rnd.Intn(10) + 1
 
-		func(id int) {
+		go func(id int) {
 			if b, ok := queryCache(id); ok {
 
 				fmt.Printf("\n")
@@ -25,7 +25,7 @@ func main() {
 			}
 		}(id)
 
-		func(id int) {
+		go func(id int) {
 			if b, ok := queryDatabase(id); ok {
 
 				fmt.Printf("\n")
@@ -35,9 +35,10 @@ func main() {
 			}
 		}(id)
 
-		fmt.Printf("Book not found with id: '%v'\n\n", id)
 		time.Sleep(150 * time.Millisecond)
 	}
+	
+	time.Sleep(2 * time.Second)
 }
 
 // Add query functions
