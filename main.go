@@ -12,14 +12,14 @@ var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func main() {
 	wg := &sync.WaitGroup{}
-	m := &sync.Mutex{}
+	m := &sync.RWMutex{}
 
 	for i := 0; i < 10; i++ {
 
 		id := rnd.Intn(10) + 1
 		wg.Add(2)
 
-		go func(id int, wg *sync.WaitGroup, m *sync.Mutex) {
+		go func(id int, wg *sync.WaitGroup, m *sync.RWMutex) {
 			if b, ok := queryCache(id, m); ok {
 
 				fmt.Printf("\n")
@@ -30,7 +30,7 @@ func main() {
 			wg.Done()
 		}(id, wg, m)
 
-		go func(id int, wg *sync.WaitGroup, m *sync.Mutex) {
+		go func(id int, wg *sync.WaitGroup, m *sync.RWMutex) {
 			if b, ok := queryDatabase(id, m); ok {
 
 				fmt.Printf("\n")
@@ -48,16 +48,16 @@ func main() {
 }
 
 // Add query functions
-func queryCache(id int, m *sync.Mutex) (Book, bool) {
+func queryCache(id int, m *sync.RWMutex) (Book, bool) {
 
-	m.Lock()
+	m.RLock()
 	b, ok := cache[id]
-	m.Unlock()
+	m.RUnlock()
 
 	return b, ok
 }
 
-func queryDatabase(id int, m *sync.Mutex) (Book, bool) {
+func queryDatabase(id int, m *sync.RWMutex) (Book, bool) {
 
 	time.Sleep(100 * time.Millisecond)
 
