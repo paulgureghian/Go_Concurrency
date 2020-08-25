@@ -15,19 +15,23 @@ func main() {
 
 		id := rnd.Intn(10) + 1
 
-		if b, ok := queryCache(id); ok {
+		func(id int) {
+			if b, ok := queryCache(id); ok {
 
-			fmt.Println("Found in cache")
-			fmt.Println(b)
-			continue
-		}
+				fmt.Println("Found in cache")
+				fmt.Println(b)
 
-		if b, ok := queryDatabase(id); ok {
+			}
+		}(id)
 
-			fmt.Println("Found in database")
-			fmt.Println(b)
-			continue
-		}
+		func(id int) {
+			if b, ok := queryDatabase(id); ok {
+
+				fmt.Println("Found in database")
+				fmt.Println(b)
+
+			}
+		}(id)
 
 		fmt.Printf("Book not found with id: '%v'", id)
 		time.Sleep(150 * time.Millisecond)
