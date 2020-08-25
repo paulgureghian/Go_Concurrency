@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 )
 
@@ -10,12 +11,14 @@ var cache = map[int]Book{}
 var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func main() {
+	wg := &sync.WaitGroup{}
 
 	for i := 0; i < 10; i++ {
 
 		id := rnd.Intn(10) + 1
+		wg.Add(2)
 
-		go func(id int) {
+		go func(id int, wg *sync.WaitGroup) {
 			if b, ok := queryCache(id); ok {
 
 				fmt.Printf("\n")
@@ -23,9 +26,10 @@ func main() {
 				fmt.Println(b)
 
 			}
-		}(id)
+			wg.Done()
+		}(id, wg)
 
-		go func(id int) {
+		go func(id int, wg *sync.WaitGroup) {
 			if b, ok := queryDatabase(id); ok {
 
 				fmt.Printf("\n")
@@ -33,12 +37,13 @@ func main() {
 				fmt.Println(b)
 
 			}
-		}(id)
+			wg.Done()
+		}(id, wg)
 
-		time.Sleep(150 * time.Millisecond)
+		//time.Sleep(150 * time.Millisecond)
 	}
-	
-	time.Sleep(2 * time.Second)
+
+	wg.Wait()
 }
 
 // Add query functions
