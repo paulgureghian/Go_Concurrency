@@ -18,6 +18,7 @@ func main() {
 		func(id int) {
 			if b, ok := queryCache(id); ok {
 
+				fmt.Printf("\n")
 				fmt.Println("Found in cache")
 				fmt.Println(b)
 
@@ -27,13 +28,14 @@ func main() {
 		func(id int) {
 			if b, ok := queryDatabase(id); ok {
 
+				fmt.Printf("\n")
 				fmt.Println("Found in database")
 				fmt.Println(b)
 
 			}
 		}(id)
 
-		fmt.Printf("Book not found with id: '%v'", id)
+		fmt.Printf("Book not found with id: '%v'\n\n", id)
 		time.Sleep(150 * time.Millisecond)
 	}
 }
