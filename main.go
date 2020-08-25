@@ -14,32 +14,53 @@ func main() {
 	wg := &sync.WaitGroup{}
 	m := &sync.RWMutex{}
 
+	// Create channels
+	cacheCh := make(chan Book)
+	dbCh := make(chan Book)
+
 	for i := 0; i < 10; i++ {
 
 		id := rnd.Intn(10) + 1
 		wg.Add(2)
 
-		go func(id int, wg *sync.WaitGroup, m *sync.RWMutex) {
+		go func(id int, wg *sync.WaitGroup, m *sync.RWMutex, ch chan<- Book) {
 			if b, ok := queryCache(id, m); ok {
 
-				fmt.Printf("\n")
-				fmt.Println("Found in cache")
-				fmt.Println(b)
-
+				ch <- b
 			}
 			wg.Done()
-		}(id, wg, m)
+		}(id, wg, m, cacheCh)
 
-		go func(id int, wg *sync.WaitGroup, m *sync.RWMutex) {
+		go func(id int, wg *sync.WaitGroup, m *sync.RWMutex, ch chan<- Book) {
 			if b, ok := queryDatabase(id, m); ok {
+
+				m.Lock()
+				cache[id] = b
+				m.Unlock()
+				ch <- b
+			}
+			wg.Done()
+		}(id, wg, m, dbCh)
+
+		// Create a goroutine to recieve massages from the channels
+		go func(cacheCh, dbCh <-chan Book) {
+
+			select {
+
+			case b := <-cacheCh:
+
+				fmt.Println("Found in cache")
+				fmt.Println(b)
+				<-dbCh
+
+			case b := <-dbCh:
 
 				fmt.Printf("\n")
 				fmt.Println("Found in database")
 				fmt.Println(b)
-
 			}
-			wg.Done()
-		}(id, wg, m)
+
+		}(cacheCh, dbCh)
 
 		time.Sleep(150 * time.Millisecond)
 	}
@@ -64,11 +85,11 @@ func queryDatabase(id int, m *sync.RWMutex) (Book, bool) {
 	for _, b := range books {
 
 		if b.ID == id {
-			
+
 			m.Lock()
 			cache[id] = b
 			m.Unlock()
-			
+
 			return b, true
 		}
 	}
